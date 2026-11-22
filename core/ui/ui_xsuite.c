@@ -144,7 +144,7 @@ static void inbox_item(uint16_t row, ui_item_t *it)
 	if (!xsuite_receive_next(v.rx_serial - (row + 1u), &r)) return;
 	sbuf_t b; sb_init(&b, it->label, sizeof it->label);
 	if (r.src_call[0]) sb_str(&b, r.src_call); else { sb_str(&b, "DMR "); sb_u32(&b, r.src_dmr, 1); }
-	xsuite_packet_summary(r.text, it->value, sizeof it->value);
+	str_copy(it->value, sizeof it->value, r.bearer == XSUITE_DMR ? "DMR" : "APRS");
 }
 static const char *inbox_body(void)
 {
