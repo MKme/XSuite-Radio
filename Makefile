@@ -47,6 +47,10 @@ $(error unknown VARIANT=$(VARIANT): the variants are $(basename $(notdir $(wildc
 endif
 include config/variants/$(VARIANT).mk
 endif
+# The owned derivative opts into its isolated integration; upstream variants retain their disable-only format.
+ifeq ($(VARIANT),xsuite)
+CONFIG_XSUITE ?= y
+endif
 -include boards/$(BOARD)/config.mk
 # The platform's defaults, after the board's: ?= keeps the first value, so the board's wins
 -include platform/$(PLATFORM)/config.mk

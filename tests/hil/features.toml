@@ -597,3 +597,9 @@ source = ["core/debuglink/debuglink_air.c", "core/debuglink/debuglink_air.h"]
 [feature.audio_probe]
 switch = "AUDIO_PROBE"
 spec = "docs/spec/usb-audio.md"
+
+# The maintained derivative uses the upstream transports and native XTOC codec templates.
+[feature.xsuite]
+switch = "XSUITE"
+spec = "XSUITE.md"
+source = ["core/xsuite", "core/ui/ui_xsuite.c"]

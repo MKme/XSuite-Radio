@@ -12,12 +12,13 @@
 static xsuite_config_t cfg = { .interval_s = 300 };
 static xsuite_view_t view = { .own_dmr = 1234567, .gps_valid = true, .call = "N1TEST-7" };
 static unsigned reports;
+static char received[257];
 void xsuite_get_config(xsuite_config_t *out) { *out = cfg; }
 bool xsuite_set_config(const xsuite_config_t *in, uint32_t ms) { (void)ms; cfg = *in; return true; }
 void xsuite_get_view(xsuite_view_t *out) { *out = view; }
 bool xsuite_action(uint8_t action) { reports++; if (action == XS_SOS) cfg.flags |= XSUITE_SOS; if (action == XS_ALL_CLEAR) cfg.flags &= ~XSUITE_SOS; view.tx_state = XS_TX_QUEUED; return true; }
 bool xsuite_action_edit(uint8_t a, const char *note, uint16_t q, uint8_t pri) { assert(note[0] && q == 2 && pri == 0); return xsuite_action(a); }
-bool xsuite_receive_next(uint32_t n, xsuite_rx_t *out) { (void)n; (void)out; return false; }
+bool xsuite_receive_next(uint32_t n, xsuite_rx_t *out) { if (!view.rx_serial || n >= view.rx_serial) return false; memset(out, 0, sizeof *out); out->serial = 1; strcpy(out->src_call, "N2TEST-7"); strcpy(out->text, received); out->length = strlen(received); return true; }
 void xsuite_inbox_summary(char *out, size_t cap) { snprintf(out, cap, "Proceed to checkpoint BRAVO. Reply when arrived."); }
 static void run(const char *script) { char err[256]; if (!sim_run(script, err, sizeof err)) { fprintf(stderr, "%s\n", err); assert(0); } }
 static void shot(const char *directory, const char *name)
@@ -38,6 +39,11 @@ int main(int argc, char **argv)
 	run("ok"); assert(ui_frame()->scr == SCR_XSUITE_EDIT);
 	ui_frame()->focus = 3; ui_focus_changed(); run("ok"); assert(reports == 2 && ui_frame()->scr == SCR_XSUITE);
 	view.tx_state = XS_TX_IMPORTED; ui_dirty(); run("wait:3000"); shot(shots, "dm32-confirmed");
+	assert(xsuite_packet_edit(XS_MESSAGE, false, 0, 0, 12345, 1, 1, false,
+		"Proceed to checkpoint BRAVO. Reply when arrived.", 1, 3, received, sizeof received));
+	view.rx_serial = 1; ui_push(SCR_XSUITE_INBOX, 0); run("wait:100"); shot(shots, "dm32-received-report");
+	run("back"); ui_frame()->focus = XS_ACTIONS + 6u; ui_focus_changed(); run("ok ok");
+	assert(ui_frame()->scr == SCR_MESSAGE_TEXT); run("6 6 6 wait:1000 5 5 wait:1000"); shot(shots, "dm32-typed-message");
 	printf("PASS X Suite radio UI: one-choice SOS, auto check-in setting, hold-to-edit quantity/priority, native text editor, send and confirmed state\n");
 	return 0;
 }
