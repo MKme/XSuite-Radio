@@ -10,6 +10,9 @@
 #include "radio/tones.h"
 #include "settings/settings.h"
 #include "config.h"
+#if CONFIG_XSUITE
+#include "xsuite/xsuite.h"
+#endif
 #include "hal_dtmf.h"
 #include "codeplug/codeplug_modes.h"	// channel kinds (docs/spec/channel-modes.md): parked channels, in every build
 #include "codeplug/codeplug_tag.h"	// CODEPLUG_SYSTEM_NONE
@@ -8343,6 +8346,9 @@ void radio_sm_init(radio_sm_t *sm, uint32_t now_ms)
 #if CONFIG_APRS
 	aprs_init(now_ms);
 #endif
+#if CONFIG_XSUITE
+	xsuite_init(now_ms);
+#endif
 }
 
 
@@ -9779,6 +9785,9 @@ static void t3_kv_retry(radio_sm_t *sm)
 void radio_sm_tick(radio_sm_t *sm, uint32_t now_ms)
 {
 	sm->led_now = now_ms;
+#if CONFIG_XSUITE
+	xsuite_tick(now_ms, sm->view.dmr.own_id, sm->dmr_running);
+#endif
 	if (codeplug_kv_serial() != kv_seen) {
 		kv_load(sm, now_ms);	// a key written (menu, debug link): its value only, without a codeplug reload
 #if CONFIG_DMR_TRUNK

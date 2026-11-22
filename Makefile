@@ -83,6 +83,9 @@ BUILD := build/$(BOARD)$(if $(VARIANT),-$(VARIANT))$(OPTION_SUFFIX)
 TARGET := $(BUILD)/rfoundry_$(BOARD)$(OPTION_SUFFIX)
 
 CORE_DIRS := core/app core/radio core/ui core/input core/codeplug core/settings core/storage
+ifeq ($(CONFIG_XSUITE),y)
+CORE_DIRS += core/xsuite
+endif
 ifeq ($(CONFIG_DMR),y)
 CORE_DIRS += core/dmr/call core/dmr/ambe core/dmr/fec
 endif

@@ -254,6 +254,8 @@ typedef struct {
 	uint8_t sig_dmr[3];
 	uint8_t sig_fm[3];
 	uint8_t reserved11[2];		// 0
+	// Appended derivative extension: versioned radio profile and sequence reservation.
+	uint8_t xsuite[32];
 } settings_t;
 
 // Pages: settings_t is stored as records of SETTINGS_PAGE_BYTES each (settings-store.md 2.1). Only the pages its size

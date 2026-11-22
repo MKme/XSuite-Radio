@@ -246,6 +246,8 @@ uint8_t position_fix_for_satellite(position_fix_t *out, uint32_t now_ms)
 	return src;
 }
 
+#endif
+#if CONFIG_SATELLITE_TLE || CONFIG_XSUITE
 bool position_utc_fields(uint32_t *date_ddmmyy, uint32_t *utc_hms, uint32_t now_ms)
 {
 	if (date_ddmmyy == NULL || utc_hms == NULL)

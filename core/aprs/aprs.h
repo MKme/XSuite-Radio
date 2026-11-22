@@ -255,6 +255,10 @@ void aprs_rx_release(void);
 uint32_t aprs_mute_hz(void);
 // A status packet (">text")
 bool aprs_send_status(const char *text);
+#if CONFIG_XSUITE
+// An existing native packet line, broadcast as status or addressed with a standard APRS message header.
+bool aprs_send_packet(const char *to, const char *text);
+#endif
 // A message with acks and retries; false when one is still waiting or the text is unusable
 bool aprs_send_message(const char *to, const char *text);
 bool aprs_send_message_opts(const char *to, const char *text, uint8_t flags);

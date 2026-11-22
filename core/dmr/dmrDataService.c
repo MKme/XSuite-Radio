@@ -7,6 +7,9 @@
 
 #include <string.h>
 #include "config.h"
+#if CONFIG_XSUITE
+#include "xsuite/xsuite.h"
+#endif
 #include "dmr/dmrDataService.h"
 #include "dmr/trunk/t3_pdu.h"
 #include "dmr/dmr_data_api.h"
@@ -2370,6 +2373,9 @@ static void inboxStore(uint32_t src, uint32_t dst, bool group, uint8_t seq, uint
 	}
 	unlock();
 	stats.smsReceived++;
+#if CONFIG_XSUITE
+	xsuite_receive(XSUITE_DMR, src, dst, group, NULL, NULL, (const uint8_t *)text, strlen(text));
+#endif
 	post(DMR_DATA_EV_SMS_RECEIVED, src);
 }
 

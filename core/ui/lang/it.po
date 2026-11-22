@@ -92,7 +92,7 @@ msgctxt "ABOUT_VALUE_HWOPT_UNSET"
 msgid "not set"
 msgstr "non impostato"
 
-#: core/ui/fmt.c core/ui/ui_aprs.c core/ui/ui_menus.c core/ui/ui_satellite.c core/ui/ui_screens.c
+#: core/ui/fmt.c core/ui/ui_aprs.c core/ui/ui_menus.c core/ui/ui_satellite.c core/ui/ui_screens.c core/ui/ui_xsuite.c
 msgctxt "VALUE_OFF"
 msgid "Off"
 msgstr "No"
@@ -947,7 +947,7 @@ msgctxt "APRS_LABEL_NMEA_ON_USB"
 msgid "NMEA on USB"
 msgstr "NMEA su USB"
 
-#: core/ui/ui_aprs.c core/ui/ui_menus.c core/ui/ui_screens.c
+#: core/ui/ui_aprs.c core/ui/ui_menus.c core/ui/ui_screens.c core/ui/ui_xsuite.c
 msgctxt "VALUE_ON"
 msgid "On"
 msgstr "Sì"
@@ -987,7 +987,7 @@ msgctxt "APRS_WHY_CANT_RECEIVE"
 msgid "This radio can't receive APRS"
 msgstr "Questa radio non riceve APRS"
 
-#: core/ui/ui_aprs.c
+#: core/ui/ui_aprs.c core/ui/ui_xsuite.c
 msgctxt "HINT_0_9_PICK_BACK"
 msgid "0-9 pick  Back"
 msgstr "0-9 scegli  Indietro"
@@ -5701,3 +5701,258 @@ msgstr "Zona non leggibile qui"
 msgctxt "SHARE_ERR_OFFER_GONE"
 msgid "The offer is gone"
 msgstr "L'offerta non c'è più"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_CHECKIN"
+msgid "Check in / OK"
+msgstr "Presenza / OK"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_SOS"
+msgid "SOS - send"
+msgstr "SOS - invia"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_MEDICAL"
+msgid "Need medical help"
+msgstr "Aiuto medico"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_HELP"
+msgid "Need assistance"
+msgstr "Serve assistenza"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_RTB"
+msgid "Returning to base"
+msgstr "Rientro alla base"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_ARRIVED"
+msgid "Arrived"
+msgstr "Arrivato"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_CLEAR"
+msgid "All clear - send"
+msgstr "Fine SOS - invia"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_SITREP"
+msgid "Status report"
+msgstr "Rapporto situazione"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_CONTACT"
+msgid "Report observation"
+msgstr "Segnala osservazione"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_WATER"
+msgid "Request water"
+msgstr "Richiedi acqua"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_FOOD"
+msgid "Request food"
+msgstr "Richiedi cibo"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_FUEL"
+msgid "Request fuel"
+msgstr "Richiedi carburante"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_SUPPLIES"
+msgid "Request medical supplies"
+msgstr "Richiedi materiale medico"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_TRANSPORT"
+msgid "Request transport"
+msgstr "Richiedi trasporto"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_EQUIPMENT"
+msgid "Request equipment"
+msgstr "Richiedi attrezzatura"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_TASK_ACK"
+msgid "Task acknowledged"
+msgstr "Compito ricevuto"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_TASK_DONE"
+msgid "Task completed"
+msgstr "Compito completato"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_MESSAGE"
+msgid "Reply: received"
+msgstr "Risposta: ricevuto"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_HAZARD"
+msgid "Report hazard"
+msgstr "Segnala pericolo"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_AUTO"
+msgid "Automatic check-ins"
+msgstr "Presenze automatiche"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_INTERVAL"
+msgid "Report interval"
+msgstr "Intervallo rapporti"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PATH"
+msgid "Send via"
+msgstr "Invia tramite"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_MOVEMENT"
+msgid "Movement reporting"
+msgstr "Rapporti movimento"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_INBOX"
+msgid "Received reports"
+msgstr "Rapporti ricevuti"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_APRS_OPTIONS"
+msgid "APRS options"
+msgstr "Opzioni APRS"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_WRITE_MESSAGE"
+msgid "Write message"
+msgstr "Scrivi messaggio"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_REPORT_QUEUED"
+msgid "Report queued"
+msgstr "Rapporto in coda"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_WAIT_SEND"
+msgid "A report is sending"
+msgstr "Invio rapporto in corso"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_SOS_ACTIVE"
+msgid "SOS ACTIVE"
+msgstr "SOS ATTIVO"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_GPS_READY"
+msgid "GPS ready"
+msgstr "GPS pronto"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_GPS_WAIT"
+msgid "Waiting for GPS"
+msgstr "Attesa GPS"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_READY"
+msgid "Ready"
+msgstr "Pronto"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_QUEUED"
+msgid "Queued"
+msgstr "In coda"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_TRANSMITTED"
+msgid "Transmitted"
+msgstr "Trasmesso"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_IMPORTED"
+msgid "Received at XTOC/XCOM"
+msgstr "Ricevuto da XTOC/XCOM"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_FAILED"
+msgid "Send failed - retry"
+msgstr "Invio fallito - riprova"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_TIME_WAIT"
+msgid "Waiting for GPS time"
+msgstr "Attesa ora GPS"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_POSITION_WAIT"
+msgid "Waiting for position"
+msgstr "Attesa posizione"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_SETUP"
+msgid "Finish setup in XTOC/XCOM"
+msgstr "Configura in XTOC/XCOM"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_SEND_HINT"
+msgid "OK sends  Hold edits"
+msgstr "OK invia  Tieni modifica"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_NOTE"
+msgid "Text / note"
+msgstr "Testo / nota"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_QUANTITY"
+msgid "Quantity / count"
+msgstr "Quantità / numero"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_PRIORITY"
+msgid "Priority"
+msgstr "Priorità"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_SEND"
+msgid "Send report"
+msgstr "Invia rapporto"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PRI_FLASH"
+msgid "FLASH"
+msgstr "FLASH"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PRI_IMMEDIATE"
+msgid "Immediate"
+msgstr "Immediata"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PRI_PRIORITY"
+msgid "Priority"
+msgstr "Priorità"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PRI_ROUTINE"
+msgid "Routine"
+msgstr "Ordinaria"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_TITLE"
+msgid "Edit report"
+msgstr "Modifica rapporto"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_HINT"
+msgid "OK changes  Back"
+msgstr "OK cambia  Indietro"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_NO_REPORTS"
+msgid "No reports received"
+msgstr "Nessun rapporto ricevuto"

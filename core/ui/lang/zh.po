@@ -94,7 +94,7 @@ msgctxt "ABOUT_VALUE_HWOPT_UNSET"
 msgid "not set"
 msgstr "未设置"
 
-#: core/ui/fmt.c core/ui/ui_aprs.c core/ui/ui_menus.c core/ui/ui_satellite.c core/ui/ui_screens.c
+#: core/ui/fmt.c core/ui/ui_aprs.c core/ui/ui_menus.c core/ui/ui_satellite.c core/ui/ui_screens.c core/ui/ui_xsuite.c
 msgctxt "VALUE_OFF"
 msgid "Off"
 msgstr "关"
@@ -949,7 +949,7 @@ msgctxt "APRS_LABEL_NMEA_ON_USB"
 msgid "NMEA on USB"
 msgstr "USB NMEA"
 
-#: core/ui/ui_aprs.c core/ui/ui_menus.c core/ui/ui_screens.c
+#: core/ui/ui_aprs.c core/ui/ui_menus.c core/ui/ui_screens.c core/ui/ui_xsuite.c
 msgctxt "VALUE_ON"
 msgid "On"
 msgstr "开"
@@ -989,7 +989,7 @@ msgctxt "APRS_WHY_CANT_RECEIVE"
 msgid "This radio can't receive APRS"
 msgstr "本机无法接收 APRS"
 
-#: core/ui/ui_aprs.c
+#: core/ui/ui_aprs.c core/ui/ui_xsuite.c
 msgctxt "HINT_0_9_PICK_BACK"
 msgid "0-9 pick  Back"
 msgstr "0-9 选  返回"
@@ -5703,3 +5703,258 @@ msgstr "本机无法识别该区域"
 msgctxt "SHARE_ERR_OFFER_GONE"
 msgid "The offer is gone"
 msgstr "该邀请已失效"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_CHECKIN"
+msgid "Check in / OK"
+msgstr "报到 / 正常"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_SOS"
+msgid "SOS - send"
+msgstr "SOS - 发送"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_MEDICAL"
+msgid "Need medical help"
+msgstr "Need medical help"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_HELP"
+msgid "Need assistance"
+msgstr "Need assistance"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_RTB"
+msgid "Returning to base"
+msgstr "返回基地"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_ARRIVED"
+msgid "Arrived"
+msgstr "已到达"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_CLEAR"
+msgid "All clear - send"
+msgstr "解除 SOS - 发送"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_SITREP"
+msgid "Status report"
+msgstr "状态报告"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_CONTACT"
+msgid "Report observation"
+msgstr "Report observation"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_WATER"
+msgid "Request water"
+msgstr "Request water"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_FOOD"
+msgid "Request food"
+msgstr "Request food"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_FUEL"
+msgid "Request fuel"
+msgstr "Request fuel"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_SUPPLIES"
+msgid "Request medical supplies"
+msgstr "Request medical supplies"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_TRANSPORT"
+msgid "Request transport"
+msgstr "请求运输"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_EQUIPMENT"
+msgid "Request equipment"
+msgstr "Request equipment"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_TASK_ACK"
+msgid "Task acknowledged"
+msgstr "任务已收到"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_TASK_DONE"
+msgid "Task completed"
+msgstr "任务已完成"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_MESSAGE"
+msgid "Reply: received"
+msgstr "回复：已收到"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_ACTION_HAZARD"
+msgid "Report hazard"
+msgstr "Report hazard"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_AUTO"
+msgid "Automatic check-ins"
+msgstr "自动报到"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_INTERVAL"
+msgid "Report interval"
+msgstr "报告间隔"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PATH"
+msgid "Send via"
+msgstr "发送方式"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_MOVEMENT"
+msgid "Movement reporting"
+msgstr "移动报告"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_INBOX"
+msgid "Received reports"
+msgstr "收到的报告"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_APRS_OPTIONS"
+msgid "APRS options"
+msgstr "APRS 选项"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_WRITE_MESSAGE"
+msgid "Write message"
+msgstr "编写消息"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_REPORT_QUEUED"
+msgid "Report queued"
+msgstr "报告已排队"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_WAIT_SEND"
+msgid "A report is sending"
+msgstr "报告正在发送"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_SOS_ACTIVE"
+msgid "SOS ACTIVE"
+msgstr "SOS ACTIVE"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_GPS_READY"
+msgid "GPS ready"
+msgstr "GPS 已就绪"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_GPS_WAIT"
+msgid "Waiting for GPS"
+msgstr "等待 GPS"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_READY"
+msgid "Ready"
+msgstr "就绪"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_QUEUED"
+msgid "Queued"
+msgstr "已排队"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_TRANSMITTED"
+msgid "Transmitted"
+msgstr "已发送"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_IMPORTED"
+msgid "Received at XTOC/XCOM"
+msgstr "XTOC/XCOM 已收到"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_FAILED"
+msgid "Send failed - retry"
+msgstr "发送失败 - 重试"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_TIME_WAIT"
+msgid "Waiting for GPS time"
+msgstr "等待 GPS 时间"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_POSITION_WAIT"
+msgid "Waiting for position"
+msgstr "等待位置"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_SETUP"
+msgid "Finish setup in XTOC/XCOM"
+msgstr "在 XTOC/XCOM 完成设置"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_SEND_HINT"
+msgid "OK sends  Hold edits"
+msgstr "OK 发送  长按编辑"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_NOTE"
+msgid "Text / note"
+msgstr "文本 / 备注"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_QUANTITY"
+msgid "Quantity / count"
+msgstr "数量 / 计数"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_PRIORITY"
+msgid "Priority"
+msgstr "Priority"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_SEND"
+msgid "Send report"
+msgstr "发送报告"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PRI_FLASH"
+msgid "FLASH"
+msgstr "最高紧急"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PRI_IMMEDIATE"
+msgid "Immediate"
+msgstr "立即"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PRI_PRIORITY"
+msgid "Priority"
+msgstr "Priority"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_PRI_ROUTINE"
+msgid "Routine"
+msgstr "Routine"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_TITLE"
+msgid "Edit report"
+msgstr "编辑报告"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_EDIT_HINT"
+msgid "OK changes  Back"
+msgstr "OK 更改  返回"
+
+#: core/ui/ui_xsuite.c
+msgctxt "XSUITE_NO_REPORTS"
+msgid "No reports received"
+msgstr "尚未收到报告"

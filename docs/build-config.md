@@ -22,6 +22,10 @@ unless it is set: `CONFIG_DMR=n` turns off every DMR feature, and asking for a s
 error. Changing a switch rebuilds everything (the build keeps the flags in `build/<board>/flags`, checked when make
 starts). `make BOARD=<b> print-config` lists the resolved switches.
 
+The maintained X Suite derivative adds `CONFIG_XSUITE` (default n), enabled by `VARIANT=xsuite`. It requires the
+existing APRS AFSK, DMR SMS and debug-link services. Its native packet templates, source identity bridge and radio menus
+live in the isolated `core/xsuite` package; see [XSUITE.md](../XSUITE.md) for the local update and compatibility gate.
+
 Every feature is on by default wherever the radio has what it needs. A board turns a feature off only for hardware
 it lacks, for board code not written yet, or when the image doesn't fit, and then the most obscure large features go
 first. Bench diagnostics such as `CONFIG_AUDIO_PROBE` stay off.

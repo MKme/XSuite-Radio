@@ -49,6 +49,7 @@ typedef enum {
 #if CONFIG_BACKLIGHT_TEST
 	SCR_BL_TEST,			// Settings > Advanced > Backlight tests
 #endif
+	SCR_XSUITE, SCR_XSUITE_INBOX, SCR_XSUITE_EDIT,
 	SCR_COUNT
 } ui_scr_t;
 
@@ -79,6 +80,9 @@ typedef struct {
 #if CONFIG_SATELLITE_TLE
 void ui_menus_satellite_text(char *target, uint8_t line, void (*done)(void));
 void ui_satellite_passes_tick(void);
+#endif
+#if CONFIG_XSUITE
+void ui_menus_xsuite_text(char *target, uint8_t max);
 #endif
 
 // A filtered list's raw row and its label (NULL: empty); false stops the pass

@@ -11,5 +11,6 @@
 !/data/
 !/*.sh
 !/*.py
+!/xsuite-fixtures.json
 !/*.awk
 !/watchdog_stub/

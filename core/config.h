@@ -5,6 +5,11 @@
 #ifndef RFOUNDRY_CONFIG_H
 #define RFOUNDRY_CONFIG_H
 
+// X Suite integration is enabled only by the derivative's variant.
+#ifndef CONFIG_XSUITE
+#define CONFIG_XSUITE 0
+#endif
+
 #ifndef CONFIG_FM
 #define CONFIG_FM			1
 #endif
@@ -574,6 +579,9 @@
 #endif
 #if !CONFIG_FM && !CONFIG_DMR
 #error "at least one of CONFIG_FM and CONFIG_DMR"
+#endif
+#if CONFIG_XSUITE && !(CONFIG_APRS_AFSK && CONFIG_DMR_SMS && CONFIG_DEBUGLINK)
+#error "CONFIG_XSUITE needs APRS_AFSK, DMR_SMS and DEBUGLINK"
 #endif
 
 #endif

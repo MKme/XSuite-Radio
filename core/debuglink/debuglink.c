@@ -5,6 +5,9 @@
 // requests are queued, injected keys are timed by the input task).
 #include <string.h>
 #include "config.h"
+#if CONFIG_XSUITE
+#include "xsuite/xsuite.h"
+#endif
 #include "radio/beep.h"
 #include "board.h"
 #include "hal_time.h"
@@ -808,6 +811,9 @@ static size_t cmd_storage(const uint8_t *req, uint16_t len, uint8_t *out, size_t
 static size_t handle(uint8_t cmd, const uint8_t *req, uint16_t len, uint8_t *out, size_t cap)
 {
 	switch (cmd) {
+#if CONFIG_XSUITE
+	case 0x27: return xsuite_debug_command(req, len, out, cap);
+#endif
 	case DL_CMD_PING:
 		out[0] = DL_ST_OK;
 		memcpy(out + 1, req, len);

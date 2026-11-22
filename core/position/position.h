@@ -71,6 +71,8 @@ uint8_t position_fix(position_fix_t *out, uint32_t now_ms);
 #if CONFIG_SATELLITE_TLE
 // For satellite prediction: use the selected source, falling back to an altitude-bearing fixed position
 uint8_t position_fix_for_satellite(position_fix_t *out, uint32_t now_ms);
+#endif
+#if CONFIG_SATELLITE_TLE || CONFIG_XSUITE
 // Current date and UTC from a fresh GPS or host NMEA stream, independent of the selected coordinate source
 bool position_utc_fields(uint32_t *date_ddmmyy, uint32_t *utc_hms, uint32_t now_ms);
 #endif

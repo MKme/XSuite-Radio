@@ -15,6 +15,9 @@
 #include "usbaudio/audio_mux.h"
 #endif
 #include "settings/settings.h"
+#if CONFIG_XSUITE
+#include "xsuite/xsuite.h"
+#endif
 
 #define TAIL_FLAGS	3
 #define MIN_FLAGS	8
@@ -32,6 +35,13 @@
 enum { K_BEACON, K_STATUS, K_MSG, K_ACK, K_HOST, K_GATE, K_DIGI };
 
 static uint8_t rf_block(void);
+#if CONFIG_XSUITE
+static void xsuite_frame_done(const qframe_t *q, bool sent)
+{
+	ax25_frame_t f;
+	if (ax25_decode(q->data, q->len, &f)) xsuite_aprs_complete(f.info, f.info_len, sent);
+}
+#endif
 
 // --- Configuration ---
 
@@ -786,6 +796,11 @@ void aprs_rx_frame(const uint8_t *frame, size_t n, uint32_t now_ms)
 	}
 	aprs_s.v.rx_frames++;
 	host_emit(KISS_CMD_DATA, frame, n);
+#if CONFIG_XSUITE
+	char xs_from[10], xs_to[10];
+	ax25_addr_format(&f.src, false, xs_from); ax25_addr_format(&f.dst, false, xs_to);
+	xsuite_receive(XSUITE_APRS, 0, 0, false, xs_from, xs_to, f.info, f.info_len);
+#endif
 	if (aprs_s.me_ok && ax25_addr_equal(&f.src, &aprs_s.me)) {
 		UNLOCK();
 		return;		// our own packet, digipeated back
@@ -987,6 +1002,9 @@ bool aprs_rf_take(aprs_rf_job_t *job, uint32_t now_ms)
 		flags = MIN_FLAGS;	// a long preamble and a long frame: shorten the preamble
 	}
 	if (n == 0) {
+#if CONFIG_XSUITE
+		xsuite_frame_done(&aprs_s.q[0], false);
+#endif
 		queue_drop(1);		// can't fit at all
 		aprs_s.v.rf_failed++;
 		aprs_changed();
@@ -1011,6 +1029,9 @@ void aprs_rf_done(aprs_rf_result_t r, uint32_t now_ms)
 	LOCK();
 	aprs_s.now = now_ms;
 	if (r == APRS_RF_SENT) {
+#if CONFIG_XSUITE
+		for (uint8_t i = 0; i < aprs_s.taken; i++) xsuite_frame_done(&aprs_s.q[i], true);
+#endif
 		queue_drop(aprs_s.taken);
 		aprs_s.v.rf_sent++;
 	} else {
@@ -1025,6 +1046,9 @@ void aprs_rf_done(aprs_rf_result_t r, uint32_t now_ms)
 			if (++aprs_s.q[i].tries < RF_TRIES) {
 				aprs_s.q[keep++] = aprs_s.q[i];
 			}
+#if CONFIG_XSUITE
+			else xsuite_frame_done(&aprs_s.q[i], false);
+#endif
 		}
 		memmove(&aprs_s.q[keep], &aprs_s.q[aprs_s.taken], (size_t)(aprs_s.qn - aprs_s.taken) * sizeof(qframe_t));
 		aprs_s.qn = (uint8_t)(aprs_s.qn - aprs_s.taken + keep);
@@ -1249,6 +1273,26 @@ bool aprs_host_frame(const uint8_t *frame, size_t n, uint32_t now_ms)
 	UNLOCK();
 	return ok;
 }
+
+#if CONFIG_XSUITE
+bool aprs_send_packet(const char *to, const char *text)
+{
+	char info[AX25_INFO_MAX + 1];
+	size_t n = strnlen(text, AX25_INFO_MAX + 1), h = 1;
+	if (!n || n > AX25_INFO_MAX || strncmp(text, "X1.", 3) || strstr(text, ".S.") != NULL) return false;
+	if (to != NULL && *to) {
+		ax25_addr_t a;
+		size_t cn = strnlen(to, 10);
+		if (cn > 9 || !ax25_addr_parse(to, cn, &a)) return false;
+		info[0] = ':'; memset(info + 1, ' ', 9); memcpy(info + 1, to, cn); info[10] = ':'; h = 11;
+	} else info[0] = '>';
+	if (n + h > AX25_INFO_MAX) return false;
+	memcpy(info + h, text, n);
+	LOCK();
+	bool ok = rf_block() == APRS_OK && queue_frame(K_STATUS, aprs_path_text(aprs_s.cfg.path), info, n + h);
+	UNLOCK(); return ok;
+}
+#endif
 
 void aprs_host_is_line(const char *line, size_t n, uint32_t now_ms)
 {

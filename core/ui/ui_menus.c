@@ -56,6 +56,9 @@
 
 extern const ui_scr_def_t ui_find_screen;
 extern const ui_scr_def_t ui_aprs_screen, ui_aprs_heard_screen, ui_aprs_station_screen;	// ui_aprs.c
+#if CONFIG_XSUITE
+extern const ui_scr_def_t ui_xsuite_screen, ui_xsuite_inbox_screen, ui_xsuite_edit_screen;
+#endif
 #if CONFIG_POSITION
 extern const ui_scr_def_t ui_fixed_pos_screen;	// ui_position.c
 #endif
@@ -2167,6 +2170,12 @@ static void ui_text_open_message(bool aprs)
 
 #if CONFIG_CHANNEL_EDIT
 static void ui_text_open(char *target, uint8_t max) { text_open(target, max, SCR_TEXT); }
+#endif
+#if CONFIG_XSUITE
+void ui_menus_xsuite_text(char *target, uint8_t max)
+{
+	text_open(target, max, SCR_MESSAGE_TEXT);
+}
 #endif
 #if CONFIG_SATELLITE_TLE
 void ui_menus_satellite_text(char *target, uint8_t line, void (*done)(void))
@@ -5504,7 +5513,7 @@ static const char *about_text(void)
 	// wider than the display and the release wrapped without its label. A release: its name, then the commit it was
 	// built from; any other build: the commit alone
 	sb_str(&b, TR(ABOUT_BODY_FIRMWARE, "Firmware: "));
-	sb_str(&b, "RadioFoundry\n");
+	sb_str(&b, CONFIG_XSUITE ? "X Suite Radio\n" : "RadioFoundry\n");
 	if (RFOUNDRY_RELEASE[0] != '\0') {
 		sb_str(&b, TR(ABOUT_BODY_RELEASE, "Release: "));
 		sb_str(&b, RFOUNDRY_RELEASE);
@@ -5533,13 +5542,14 @@ static const char *about_text(void)
 	// order: a comma-joined list wraps mid-name on every display
 	sb_str(&b, RFOUNDRY_ABOUT_AUTHOR_COUNT > 1 ? TR(ABOUT_BODY_MAINTAINERS, "Maintainers:") :
 		TR(ABOUT_BODY_MAINTAINER, "Maintainer:"));
+	if (CONFIG_XSUITE) sb_str(&b, "\nMKME Media / X Suite");
 	for (unsigned i = 0; i < RFOUNDRY_ABOUT_AUTHOR_COUNT; i++) {
 		sb_chr(&b, RFOUNDRY_ABOUT_AUTHOR_COUNT > 1 ? '\n' : ' ');
 		sb_str(&b, about_authors[i]);
 	}
 	sb_chr(&b, '\n');
 	sb_str(&b, TR(ABOUT_BODY_CONTRIBUTORS, "Contributors:"));
-	sb_str(&b, "\ngithub.com/radiofoundry");	// on its own line, as a maintainer is: it never wraps after the label
+	sb_str(&b, "\ngithub.com/radiofoundry");	// upstream attribution stays visible in the derivative
 	for (unsigned i = 0; i < RFOUNDRY_ABOUT_THIRD_PARTY_COUNT; i++) {
 		sb_chr(&b, '\n');
 		sb_str(&b, about_third[i][0]);
@@ -6350,11 +6360,12 @@ void ui_crash_tick(uint32_t now_ms)
 
 // Every tool keeps its number on every radio and build, so a key path (OK 6 7: Diagnostics; tests/hil/test_ui.py and the
 // user guide) is the same everywhere. A build without diagnostics skips 7, and one without satellite skips 9.
-enum { T_SCAN, T_POSITION, T_HOTSPOT, T_USB_NET, T_SFR, T_ROAM, T_DIAG, T_APRS, T_SATELLITE, T_ZONE_OFFER, T_COUNT };
+enum { T_SCAN, T_POSITION, T_HOTSPOT, T_USB_NET, T_SFR, T_ROAM, T_DIAG, T_APRS, T_SATELLITE, T_ZONE_OFFER, T_XSUITE, T_COUNT };
 
 // A tool this build doesn't have is left out of the list
 static bool tool_shown(uint16_t i)
 {
+	if (i == T_XSUITE) return CONFIG_XSUITE;
 #if CONFIG_ZONE_SHARE
 	if (i == T_ZONE_OFFER)
 		return offer_waiting();	// 0 on the keypad: only while another radio's zone waits
@@ -6409,6 +6420,12 @@ static void tools_item(uint16_t row, ui_item_t *it)
 	uint16_t i = tools_row(row);
 	if (i >= T_COUNT)
 		return;
+#if CONFIG_XSUITE
+	if (i == T_XSUITE) {
+		str_copy(it->label, sizeof it->label, tr(TRX(XSUITE_TITLE, "X Suite")));
+		return;
+	}
+#endif
 	str_copy(it->label, sizeof it->label, tr(names[i]));
 	item_num(it, (uint16_t)(i + 1u));	// the tool's own number, not its row (see the enum)
 	sbuf_t b;
@@ -6479,6 +6496,9 @@ static void tools_select(uint16_t row, bool hold)
 {
 	(void)hold;
 	switch (tools_row(row)) {
+#if CONFIG_XSUITE
+	case T_XSUITE: ui_push(SCR_XSUITE, 0); break;
+#endif
 	case T_SCAN:
 		if (!(feats() & UI_FEAT_SCAN)) {
 			ui_toast(TR(WHY_SCAN_NOT_IN_BUILD, "Scan: not in this build"));
@@ -8137,6 +8157,10 @@ static const ui_scr_def_t cpf_screen = {
 };
 
 const ui_scr_def_t *const ui_scr[SCR_COUNT] = {
+#if CONFIG_XSUITE
+	[SCR_XSUITE] = &ui_xsuite_screen, [SCR_XSUITE_INBOX] = &ui_xsuite_inbox_screen,
+	[SCR_XSUITE_EDIT] = &ui_xsuite_edit_screen,
+#endif
 	[SCR_HOME] = &home_screen, [SCR_QUICK] = &quick_screen, [SCR_HUB] = &hub_screen,
 	[SCR_FIND] = &ui_find_screen, [SCR_ACTIONS] = &actions_screen, [SCR_CONTACTS] = &contacts_screen,
 	[SCR_MESSAGES] = &messages_screen, [SCR_MESSAGE] = &message_screen, [SCR_COMPOSE] = &compose_screen,

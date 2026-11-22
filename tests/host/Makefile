@@ -698,7 +698,7 @@ i18nTestDefault: i18nTest.c $(I18N) $(LANG_H) $(wildcard $(CORE)/ui/*.h $(CORE)/
 # the long-press rules; uiSim renders screens to PNG (make ui-gallery: docs/ux/screens/, contact sheets in
 # docs/ux/screens/sheets/). Built without the __attribute__ override above so the weak service stubs
 # (ui_svc_stub.c) give way to the simulator's.
-UIAPP   := $(UI) $(CORE)/ui/ui_app.c $(CORE)/ui/ui_menus.c $(CORE)/ui/ui_find.c $(CORE)/ui/ui_aprs.c $(CORE)/ui/ui_position.c $(CORE)/ui/ui_gps.c $(CORE)/ui/ui_satellite.c $(CORE)/ui/ui_dual.c $(CORE)/radio/tones.c \
+UIAPP   := $(UI) $(CORE)/ui/ui_app.c $(CORE)/ui/ui_menus.c $(CORE)/ui/ui_xsuite.c $(CORE)/ui/ui_find.c $(CORE)/ui/ui_aprs.c $(CORE)/ui/ui_position.c $(CORE)/ui/ui_gps.c $(CORE)/ui/ui_satellite.c $(CORE)/ui/ui_dual.c $(CORE)/radio/tones.c \
            $(CORE)/codeplug/codeplug_talk.c $(CORE)/codeplug/zone_edit.c $(CORE)/codeplug/zone_shift.c $(CORE)/radio/radio_am.c \
            $(CORE)/radio/radio_bcast.c $(CORE)/support/sha256.c $(CORE)/support/image_hash.c \
            $(CORE)/support/support_info.c sim/ui_sim.c sim/ui_png.c
@@ -713,6 +713,9 @@ TESTS   += uiFlowTestSatellite
 
 uiFlowTest: uiFlowTest.c $(UIDEPS)
 	$(CC) $(UIFLAGS) -DCONFIG_P25=1 -DCONFIG_P25_TRUNK=1 -DCONFIG_NXDN=1 -o $@ uiFlowTest.c $(UIAPP) -lz
+
+xsuiteUiTest: xsuiteUiTest.c $(UIDEPS) $(CORE)/xsuite/xsuite_packet.c
+	$(CC) $(UIFLAGS) -DCONFIG_XSUITE=1 -o $@ xsuiteUiTest.c $(UIAPP) $(CORE)/xsuite/xsuite_packet.c -lz
 
 # The same flows built as a radio with only a monochrome screen builds them (CONFIG_UI_COLOR=n): no color rows;
 # without a translation (CONFIG_LANG_ES=n): the Language screen dims Spanish; and with the backlight tests

@@ -15,6 +15,7 @@
 
 # analog FM receive and transmit
 CONFIG_FM ?= y
+CONFIG_XSUITE ?= n
 # CTCSS / DCS encode and decode (needs FM)
 CONFIG_SUBTONE ?= $(CONFIG_FM)
 # DMR Tier II voice: modem driver, call stack, AMBE FEC, vocoder hosting
@@ -562,6 +563,12 @@ CONFIG_DMR_DATA_CORE := $(if $(strip $(foreach f,DMR_SMS DMR_ARS DMR_LRRP DMR_SI
 # Derived: the position service (core/position) is built for the GPS and for everything that reports our position
 CONFIG_POSITION := $(if $(strip $(foreach f,GPS APRS DMR_LRRP DMR_GPS,$(call feature_on,$(f)))),y,n)
 
+FEATURES += XSUITE
+ifneq ($(call feature_on,XSUITE),)
+  ifneq ($(call feature_on,APRS_AFSK)$(call feature_on,DMR_SMS)$(call feature_on,DEBUGLINK),yyy)
+    $(error CONFIG_XSUITE=y needs CONFIG_APRS_AFSK=y CONFIG_DMR_SMS=y CONFIG_DEBUGLINK=y)
+  endif
+endif
 FEATURE_DEFS := $(foreach f,$(FEATURES) DMR_DATA_CORE POSITION AIR IMBE MBE,-DCONFIG_$(f)=$(if $(call feature_on,$(f)),1,0))
 
 ## Numeric build values (board config.mk sets the defaults; the command line overrides)
