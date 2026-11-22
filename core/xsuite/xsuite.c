@@ -14,22 +14,27 @@
 #include "settings/settings.h"
 #include "board.h"
 #include "hal_time.h"
+#include "debuglink/dl_fmt.h"
 
 #define LOCK() storage_quick_lock()
 #define UNLOCK() storage_quick_unlock()
 #define RX_COUNT 2u
 #define NO_ACTION 255u
+#define STAGE_IDLE_MS 10000u
 static struct {
 	xsuite_config_t cfg;
 	xsuite_view_t view;
 	xsuite_rx_t rx[RX_COUNT];
 	uint8_t rx_count, action, tx_bearer, tx_flags, tx_paths;
-	uint32_t tx_dst, sequence, reserved, tag, next_ms, last_ms, clock_seconds, clock_ms;
+	uint32_t tx_dst, sequence, reserved, tag, next_ms, last_ms, clock_seconds, clock_ms, stage_ms;
 	int32_t last_lat, last_lon;
-	bool last_fix, tx_ready, dmr_wait, aprs_wait, ids_ready;
+	bool last_fix, tx_ready, tx_staging, dmr_wait, aprs_wait, ids_ready;
 	uint16_t tx_length, tx_have;
 	char tx_call[10], tx_text[XSUITE_TEXT_MAX + 1];
 	char note[65], inbox[320];
+	char inbox_call[10];
+	uint32_t inbox_src;
+	uint8_t inbox_bearer;
 	uint16_t quantity;
 	uint8_t priority;
 	bool edited;
@@ -103,7 +108,7 @@ bool xsuite_action(uint8_t action)
 {
 	if (action >= XS_ACTIONS) return false;
 	LOCK(); bool urgent = action == XS_SOS || action == XS_ALL_CLEAR;
-	bool ok = urgent || (xs.action == NO_ACTION && !xs.tx_ready && xs.tx_have == 0);
+	bool ok = urgent || (xs.action == NO_ACTION && !xs.tx_ready && !xs.tx_staging);
 	if (ok) { xs.action = action; xs.view.tx_state = XS_TX_QUEUED;
 		xs.edited = false;
 		if (action == XS_SOS) xs.cfg.flags |= XSUITE_SOS;
@@ -124,7 +129,14 @@ bool xsuite_action_edit(uint8_t action, const char *note, uint16_t quantity, uin
 void xsuite_inbox_summary(char *out, size_t cap)
 {
 	if (!cap) return;
-	LOCK(); size_t n = strnlen(xs.inbox, cap - 1); memcpy(out, xs.inbox, n); out[n] = '\0'; UNLOCK();
+	LOCK();
+	dl_text_t t; dl_text_init(&t, out, cap);
+	if (xs.inbox[0]) {
+		if (xs.inbox_call[0]) dl_text(&t, "%s %s\n", xs.inbox_call, xs.inbox_bearer == XSUITE_DMR ? "DMR" : "APRS");
+		else dl_text(&t, "DMR %u\n", (unsigned)xs.inbox_src);
+		dl_text(&t, "%s", xs.inbox);
+	}
+	UNLOCK();
 }
 
 void xsuite_aprs_complete(const uint8_t *info, size_t length, bool sent)
@@ -139,11 +151,38 @@ void xsuite_aprs_complete(const uint8_t *info, size_t length, bool sent)
 	UNLOCK();
 }
 
+static void completed_summary(const xsuite_rx_t *r, const char *packet)
+{
+	xsuite_packet_summary(packet, xs.inbox, sizeof xs.inbox);
+	copy_call(xs.inbox_call, r->src_call); xs.inbox_src = r->src_dmr; xs.inbox_bearer = r->bearer;
+}
+
+static bool same_call(const char *text, size_t length, const char *call)
+{
+	ax25_addr_t a, b;
+	return call[0] && ax25_addr_parse(text, length, &a) && ax25_addr_parse(call, strlen(call), &b) && ax25_addr_equal(&a, &b);
+}
+
+static bool inbox_for_us(const xsuite_rx_t *r)
+{
+	if (r->bearer != XSUITE_APRS) return true; // DMR SMS has already passed upstream's forUs filtering.
+	if (same_call(r->src_call, strlen(r->src_call), xs.view.call)) return false;
+	if (r->length > 11 && r->text[0] == ':' && r->text[10] == ':') {
+		size_t n = 9; while (n && r->text[n] == ' ') n--;
+		return same_call(r->text + 1, n, xs.view.call);
+	}
+	return same_call(r->dst_call, strlen(r->dst_call), xs.view.call) || !strcmp(r->dst_call, "APXTOC") ||
+		!strcmp(r->dst_call, "APRS") || !strcmp(r->dst_call, APRS_TOCALL);
+}
+
 static void receive_summary(const xsuite_rx_t *r)
 {
+	// Keep the raw host ring promiscuous; only the radio's own command preview applies recipient/echo filtering.
+	// This runs under XS LOCK, so use the cached own call rather than acquiring the APRS lock from here.
+	if (!inbox_for_us(r)) return;
 	xsuite_packet_part_t p;
 	if (!xsuite_packet_part(r->text, &p)) return;
-	if (p.total == 1) { xsuite_packet_summary(r->text, xs.inbox, sizeof xs.inbox); return; }
+	if (p.total == 1) { completed_summary(r, r->text); return; }
 	if (p.part == 1) {
 		xs.assembly.src = r->src_dmr; xs.assembly.bearer = r->bearer; copy_call(xs.assembly.call, r->src_call);
 		strcpy(xs.assembly.id, p.id); xs.assembly.tpl = p.tpl; xs.assembly.total = p.total; xs.assembly.next = 1;
@@ -162,7 +201,7 @@ static void receive_summary(const xsuite_rx_t *r)
 	if (p.payload_len >= sizeof xs.assembly.data - xs.assembly.have) { xs.assembly.next = 0; return; }
 	memcpy(xs.assembly.data + xs.assembly.have, p.payload, p.payload_len); xs.assembly.have += p.payload_len;
 	xs.assembly.data[xs.assembly.have] = '\0'; xs.assembly.next++;
-	if (p.part == p.total) { xsuite_packet_summary(xs.assembly.data, xs.inbox, sizeof xs.inbox); xs.assembly.next = 0; }
+	if (p.part == p.total) { completed_summary(r, xs.assembly.data); xs.assembly.next = 0; }
 }
 
 void xsuite_set_time(uint32_t seconds, uint32_t now)
@@ -216,9 +255,10 @@ bool xsuite_tx_begin(uint8_t bearer, uint8_t flags, uint32_t dst, const char *ca
 {
 	if (bearer > XSUITE_BOTH || flags & ~XSUITE_GROUP || dst > 0xFFFFFFu || !length || length > XSUITE_TEXT_MAX) return false;
 	if (bearer != XSUITE_DMR && call != NULL && call[0]) { ax25_addr_t a; if (!ax25_addr_parse(call, strnlen(call, 10), &a)) return false; }
-	LOCK(); bool ok = !xs.tx_ready && xs.action == NO_ACTION;
+	LOCK(); bool ok = !xs.tx_ready && !xs.tx_staging && xs.action == NO_ACTION;
 	if (ok) { xs.tx_bearer = bearer; xs.tx_flags = flags; xs.tx_dst = dst; copy_call(xs.tx_call, call);
-		xs.tx_length = length; xs.tx_have = 0; memset(xs.tx_text, 0, sizeof xs.tx_text); }
+		xs.tx_length = length; xs.tx_have = 0; xs.tx_staging = true; xs.stage_ms = hal_millis();
+		xs.view.tx_state = XS_TX_QUEUED; memset(xs.tx_text, 0, sizeof xs.tx_text); }
 	UNLOCK(); return ok;
 }
 
@@ -226,16 +266,16 @@ bool xsuite_tx_chunk(uint16_t offset, const uint8_t *data, size_t n)
 {
 	if (!n || n > 61) return false;
 	for (size_t i = 0; i < n; i++) if (data[i] < 32 || data[i] > 126) return false;
-	LOCK(); bool ok = !xs.tx_ready && offset == xs.tx_have && offset + n <= xs.tx_length;
-	if (ok) { memcpy(xs.tx_text + offset, data, n); xs.tx_have = (uint16_t)(offset + n); }
+	LOCK(); bool ok = xs.tx_staging && !xs.tx_ready && offset == xs.tx_have && offset + n <= xs.tx_length;
+	if (ok) { memcpy(xs.tx_text + offset, data, n); xs.tx_have = (uint16_t)(offset + n); xs.stage_ms = hal_millis(); }
 	UNLOCK(); return ok;
 }
 
 bool xsuite_tx_commit(void)
 {
 	xsuite_packet_part_t part;
-	LOCK(); bool ok = !xs.tx_ready && xs.tx_length && xs.tx_have == xs.tx_length && xsuite_packet_part(xs.tx_text, &part);
-	if (ok) { xs.tx_ready = true; xs.tx_paths = xs.tx_bearer == XSUITE_BOTH ? 3u : (uint8_t)(1u << xs.tx_bearer);
+	LOCK(); bool ok = xs.tx_staging && !xs.tx_ready && xs.tx_length && xs.tx_have == xs.tx_length && xsuite_packet_part(xs.tx_text, &part);
+	if (ok) { xs.tx_staging = false; xs.tx_ready = true; xs.tx_paths = xs.tx_bearer == XSUITE_BOTH ? 3u : (uint8_t)(1u << xs.tx_bearer);
 		xs.view.tx_state = XS_TX_QUEUED; xs.last_ms = 0; }
 	UNLOCK(); return ok;
 }
@@ -250,7 +290,7 @@ static bool moved(const position_fix_t *f)
 	return (lat + lon / 2) / 90 >= xs.cfg.distance_m;
 }
 
-void xsuite_tick(uint32_t now, uint32_t own, bool on_dmr)
+void xsuite_tick(uint32_t now, uint32_t own, bool on_dmr, uint32_t channel_target, bool channel_private)
 {
 	position_fix_t f;
 	uint32_t date, hms, minutes = 0;
@@ -260,11 +300,14 @@ void xsuite_tick(uint32_t now, uint32_t own, bool on_dmr)
 	aprs_view_t av; aprs_get_view(&av);
 	LOCK(); xs.view.own_dmr = own; xs.view.gps_valid = fix; xs.view.gps_age_s = fix ? (now - f.ms) / 1000u : UINT32_MAX;
 	copy_call(xs.view.call, av.call);
-	if (xs.cfg.enabled && fix && xs.action == NO_ACTION && !xs.tx_ready && now - xs.last_ms >= 30000u &&
+	if (xs.tx_staging && now - xs.stage_ms >= STAGE_IDLE_MS) {
+		xs.tx_staging = false; xs.tx_have = xs.tx_length = 0; xs.view.tx_state = XS_TX_FAILED;
+	}
+	if (xs.cfg.enabled && fix && xs.action == NO_ACTION && !xs.tx_ready && !xs.tx_staging && now - xs.last_ms >= 30000u &&
 	    ((int32_t)(now - xs.next_ms) >= 0 || moved(&f))) xs.action = XS_CHECKIN;
 	uint8_t action = xs.action;
 	UNLOCK();
-	if (action != NO_ACTION && !xs.tx_ready) {
+	if (action != NO_ACTION && !xs.tx_ready && !xs.tx_staging) {
 		if (!xs.tag) { xs.view.tx_state = XS_TX_SETUP; return; }
 		if (!fix && (action == XS_CHECKIN || action == XS_RTB)) { xs.view.tx_state = XS_TX_NO_POSITION; return; }
 		if (xs.sequence == xs.reserved) { xs.reserved += 256u; xs.ids_ready = false; save(now); }
@@ -287,14 +330,19 @@ void xsuite_tick(uint32_t now, uint32_t own, bool on_dmr)
 	}
 	if (!xs.tx_ready) return;
 	if (!xs.last_ms) xs.last_ms = now;
-	if (now - xs.last_ms > 90000u) { xs.tx_ready = false; xs.tx_have = 0; xs.aprs_wait = false; xs.dmr_wait = false; xs.view.tx_state = XS_TX_FAILED; return; }
+	if (now - xs.last_ms > 90000u) {
+		LOCK(); xs.tx_ready = false; xs.tx_have = xs.tx_length = 0; xs.aprs_wait = false; xs.dmr_wait = false;
+		xs.view.tx_state = XS_TX_FAILED; UNLOCK(); return;
+	}
 	if ((xs.tx_paths & 1u) && !xs.aprs_wait) {
 		if (aprs_send_packet(xs.tx_call, xs.tx_text)) xs.aprs_wait = true;
 	}
 	if ((xs.tx_paths & 2u) && on_dmr && !xs.dmr_wait) {
-		uint32_t dst = xs.tx_dst;
-		if (!dst) { xs.view.tx_state = XS_TX_FAILED; xs.tx_ready = false; xs.tx_have = 0; return; }
-		if (sms_send(dst, (xs.tx_flags & XSUITE_GROUP) != 0, xs.tx_text, true, DMR_SMS_FORMAT_ETSI_IP)) xs.dmr_wait = true;
+		// Destination zero means the current channel contact, like the upstream radio menus.
+		// A directed person/TOC or explicit talkgroup keeps its chosen address and call type.
+		uint32_t dst = xs.tx_dst ? xs.tx_dst : channel_target ? channel_target : 9u;
+		bool group = xs.tx_dst ? (xs.tx_flags & XSUITE_GROUP) != 0 : !channel_target || !channel_private;
+		if (sms_send(dst, group, xs.tx_text, true, DMR_SMS_FORMAT_ETSI_IP)) xs.dmr_wait = true;
 	}
 	if (xs.dmr_wait) {
 		dmr_req_state_t state = sms_send_state();
@@ -303,7 +351,10 @@ void xsuite_tick(uint32_t now, uint32_t own, bool on_dmr)
 			if (state == DMR_REQ_FAILED) xs.view.tx_state = XS_TX_FAILED;
 		}
 	}
-	if (!xs.tx_paths) { xs.tx_ready = false; xs.aprs_wait = false; xs.tx_have = xs.tx_length = 0;
-		if (xs.view.tx_state != XS_TX_FAILED && xs.view.tx_state != XS_TX_IMPORTED) xs.view.tx_state = XS_TX_SENT; }
+	if (!xs.tx_paths) {
+		LOCK(); xs.tx_ready = false; xs.aprs_wait = false; xs.tx_have = xs.tx_length = 0;
+		if (xs.view.tx_state != XS_TX_FAILED && xs.view.tx_state != XS_TX_IMPORTED) xs.view.tx_state = XS_TX_SENT;
+		UNLOCK();
+	}
 }
 #endif

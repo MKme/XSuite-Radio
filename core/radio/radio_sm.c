@@ -9786,7 +9786,7 @@ void radio_sm_tick(radio_sm_t *sm, uint32_t now_ms)
 {
 	sm->led_now = now_ms;
 #if CONFIG_XSUITE
-	xsuite_tick(now_ms, sm->view.dmr.own_id, sm->dmr_running);
+	xsuite_tick(now_ms, sm->view.dmr.own_id, sm->dmr_running, sm->view.dmr.target_id, sm->view.dmr.target_private);
 #endif
 	if (codeplug_kv_serial() != kv_seen) {
 		kv_load(sm, now_ms);	// a key written (menu, debug link): its value only, without a codeplug reload

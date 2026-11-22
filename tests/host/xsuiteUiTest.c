@@ -19,7 +19,7 @@ void xsuite_get_view(xsuite_view_t *out) { *out = view; }
 bool xsuite_action(uint8_t action) { reports++; if (action == XS_SOS) cfg.flags |= XSUITE_SOS; if (action == XS_ALL_CLEAR) cfg.flags &= ~XSUITE_SOS; view.tx_state = XS_TX_QUEUED; return true; }
 bool xsuite_action_edit(uint8_t a, const char *note, uint16_t q, uint8_t pri) { assert(note[0] && q == 2 && pri == 0); return xsuite_action(a); }
 bool xsuite_receive_next(uint32_t n, xsuite_rx_t *out) { if (!view.rx_serial || n >= view.rx_serial) return false; memset(out, 0, sizeof *out); out->serial = 1; strcpy(out->src_call, "N2TEST-7"); strcpy(out->text, received); out->length = strlen(received); return true; }
-void xsuite_inbox_summary(char *out, size_t cap) { snprintf(out, cap, "Proceed to checkpoint BRAVO. Reply when arrived."); }
+void xsuite_inbox_summary(char *out, size_t cap) { snprintf(out, cap, "N2TEST-7 APRS\nProceed to checkpoint BRAVO. Reply when arrived."); }
 static void run(const char *script) { char err[256]; if (!sim_run(script, err, sizeof err)) { fprintf(stderr, "%s\n", err); assert(0); } }
 static void shot(const char *directory, const char *name)
 {

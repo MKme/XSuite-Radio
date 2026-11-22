@@ -35,18 +35,20 @@ typedef struct {
 } xsuite_view_t;
 
 void xsuite_init(uint32_t now_ms);
-void xsuite_tick(uint32_t now_ms, uint32_t own_dmr, bool on_dmr);
+void xsuite_tick(uint32_t now_ms, uint32_t own_dmr, bool on_dmr, uint32_t channel_target, bool channel_private);
 void xsuite_get_config(xsuite_config_t *out);
 bool xsuite_set_config(const xsuite_config_t *cfg, uint32_t now_ms);
 void xsuite_get_view(xsuite_view_t *out);
 bool xsuite_action(uint8_t action);
 bool xsuite_action_edit(uint8_t action, const char *note, uint16_t quantity, uint8_t priority);
+// One atomic snapshot of the last complete native preview and its retained native source/transport label.
 void xsuite_inbox_summary(char *out, size_t cap);
 void xsuite_aprs_complete(const uint8_t *info, size_t length, bool sent);
 void xsuite_receive(uint8_t bearer, uint32_t src_dmr, uint32_t dst_dmr, bool group,
 		    const char *src_call, const char *dst_call, const uint8_t *text, size_t length);
 bool xsuite_receive_next(uint32_t after, xsuite_rx_t *out);
-// One native packet line staged in bounded chunks. Commit succeeds only after every byte arrived in order.
+// One native line staged in bounded chunks, reserved against automatic/menu writes until valid commit.
+// Ten seconds without a successful chunk abandons a disconnected host's reservation.
 bool xsuite_tx_begin(uint8_t bearer, uint8_t flags, uint32_t dst, const char *call, uint16_t length);
 bool xsuite_tx_chunk(uint16_t offset, const uint8_t *data, size_t length);
 bool xsuite_tx_commit(void);

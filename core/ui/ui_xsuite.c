@@ -148,12 +148,9 @@ static void inbox_item(uint16_t row, ui_item_t *it)
 }
 static const char *inbox_body(void)
 {
-	static char text[320]; xsuite_rx_t r; xsuite_view_t v;
-	xsuite_get_view(&v);
-	if (!v.rx_serial || !xsuite_receive_next(v.rx_serial - 1u, &r)) return TR(XSUITE_NO_REPORTS, "No reports received");
+	static char text[352];
 	xsuite_inbox_summary(text, sizeof text);
-	if (!text[0]) xsuite_packet_summary(r.text, text, sizeof text);
-	return text;
+	return text[0] ? text : TR(XSUITE_NO_REPORTS, "No reports received");
 }
 const ui_scr_def_t ui_xsuite_inbox_screen = {
 	.name = "xsuite-inbox", .flags = SF_LIST | SF_FIELD, .prefix = TRN(XSUITE_INBOX, "Received reports"),
