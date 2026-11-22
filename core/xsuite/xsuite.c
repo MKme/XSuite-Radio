@@ -320,7 +320,7 @@ void xsuite_tick(uint32_t now, uint32_t own, bool on_dmr, uint32_t channel_targe
 		xs.tx_length = xs.tx_have = (uint16_t)n; xs.tx_bearer = xs.cfg.via; xs.tx_flags = xs.cfg.flags & XSUITE_GROUP;
 		xs.tx_dst = xs.cfg.dst_dmr; copy_call(xs.tx_call, xs.cfg.dst_call);
 		xs.tx_paths = xs.cfg.via == XSUITE_BOTH ? 3u : (uint8_t)(1u << xs.cfg.via);
-		xs.tx_ready = true; xs.action = NO_ACTION; xs.last_ms = now;
+		xs.tx_ready = true; xs.action = NO_ACTION; xs.last_ms = now; xs.view.tx_state = XS_TX_QUEUED;
 		const char *id = strchr(xs.tx_text + 3, '.'); id = id ? strchr(id + 1, '.') : NULL;
 		if (id) { memcpy(xs.view.last_id, id + 1, 16); xs.view.last_id[16] = '\0'; }
 		UNLOCK();

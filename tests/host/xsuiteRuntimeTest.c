@@ -207,6 +207,11 @@ int main(void)
 	assert(xsuite_tx_chunk(10, (const uint8_t *)valid + 10, strlen(valid) - 10));
 	assert(xsuite_tx_commit()); tick(49000); assert(sends == before + 3 && !strcmp(sent, valid));
 	tick(50000); assert(sends == before + 4 && !strncmp(sent, "X1.9.C.", 7));
+	now = 51000;
+	assert(xsuite_tx_begin(XSUITE_APRS, 0, 0, "", strlen(valid)));
+	assert(xsuite_tx_chunk(0, (const uint8_t *)valid, 10));
+	assert(xsuite_action(XS_SOS)); tick(62000); // The host disappears; queued SOS still runs after stage expiry.
+	xsuite_get_view(&v); assert(sends == before + 5 && v.tx_state == XS_TX_SENT && !strncmp(sent, "X1.9.C.", 7));
 	puts("PASS X Suite runtime: own/broadcast APRS preview filtering with raw forwarding, retained source, multipart, DMR addressing and wire group bit2, staging versus auto/menu, timeout recovery and queued SOS");
 	return 0;
 }
