@@ -48,7 +48,8 @@ endif
 include config/variants/$(VARIANT).mk
 endif
 # The owned derivative opts into its isolated integration; upstream variants retain their disable-only format.
-ifeq ($(VARIANT),xsuite)
+# Registry generation probes other boards from this recipe's inherited environment.
+ifeq ($(BOARD):$(VARIANT),dm32:xsuite)
 CONFIG_XSUITE ?= y
 endif
 -include boards/$(BOARD)/config.mk

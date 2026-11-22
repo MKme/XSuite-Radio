@@ -153,6 +153,7 @@ void xsuite_aprs_complete(const uint8_t *info, size_t length, bool sent)
 
 static void completed_summary(const xsuite_rx_t *r, const char *packet)
 {
+	if (xsuite_packet_ack(packet, NULL)) return;
 	xsuite_packet_summary(packet, xs.inbox, sizeof xs.inbox);
 	copy_call(xs.inbox_call, r->src_call); xs.inbox_src = r->src_dmr; xs.inbox_bearer = r->bearer;
 }

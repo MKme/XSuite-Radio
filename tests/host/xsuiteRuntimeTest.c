@@ -133,6 +133,19 @@ int main(void)
 	xsuite_inbox_summary(command_preview, sizeof command_preview); assert(!strcmp(command_preview, "N2TEST-7 APRS\nProceed to BRAVO"));
 	xsuite_receive(XSUITE_DMR, 999, 123, false, NULL, NULL, a, sizeof a - 1);
 	xsuite_inbox_summary(after_beacon, sizeof after_beacon); assert(!strcmp(after_beacon, command_preview));
+	// Automatic native receipts update delivery while leaving the operator's readable command and source intact.
+	fix = true; xsuite_get_config(&c); strcpy(c.dst_call, "N2TEST-7"); assert(xsuite_set_config(&c, now));
+	assert(xsuite_action(XS_CHECKIN)); tick(2000); xsuite_get_view(&v);
+	assert(!strcmp(v.last_id, xsuite_ack_id) && v.tx_state == XS_TX_SENT);
+	assert(xsuite_packet_ack(xsuite_ack, NULL) && !xsuite_packet_ack(xsuite_readable_ack, NULL));
+	const char *receipts[] = { xsuite_old_ack, xsuite_ack, xsuite_ack, xsuite_old_ack };
+	const char *receipt_sources[] = { "N2TEST-7", "N3TEST-7", "N2TEST-7", "N2TEST-7" };
+	for (unsigned i = 0; i < 4; i++) {
+		xsuite_receive(XSUITE_APRS, 0, 0, false, receipt_sources[i], "N1TEST-7", (const uint8_t *)receipts[i], strlen(receipts[i]));
+		xsuite_get_view(&v); assert(v.tx_state == (i < 2 ? XS_TX_SENT : XS_TX_IMPORTED));
+		xsuite_inbox_summary(after_beacon, sizeof after_beacon); assert(!strcmp(after_beacon, command_preview));
+		assert(xsuite_receive_next(v.rx_serial - 1, &rx) && !strcmp(rx.text, receipts[i]));
+	}
 	// UI recipient/echo checks do not remove frames from the unchanged host receive stream.
 	char addressed[257]; addressed[0] = ':'; memset(addressed + 1, ' ', 9); memcpy(addressed + 1, "OTHER-7", 7);
 	addressed[10] = ':'; strcpy(addressed + 11, native_message);
@@ -212,6 +225,6 @@ int main(void)
 	assert(xsuite_tx_chunk(0, (const uint8_t *)valid, 10));
 	assert(xsuite_action(XS_SOS)); tick(62000); // The host disappears; queued SOS still runs after stage expiry.
 	xsuite_get_view(&v); assert(sends == before + 5 && v.tx_state == XS_TX_SENT && !strncmp(sent, "X1.9.C.", 7));
-	puts("PASS X Suite runtime: own/broadcast APRS preview filtering with raw forwarding, retained source, multipart, DMR addressing and wire group bit2, staging versus auto/menu, timeout recovery and queued SOS");
+	puts("PASS X Suite runtime: own/broadcast APRS preview filtering, control receipts preserving readable inbox/source, raw forwarding, multipart, DMR addressing and wire group bit2, staging versus auto/menu, timeout recovery and queued SOS");
 	return 0;
 }

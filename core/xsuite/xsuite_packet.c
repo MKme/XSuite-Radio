@@ -182,7 +182,14 @@ bool xsuite_packet_ack(const char *text, const char *expected)
 {
 	uint8_t b[192]; unsigned tpl;
 	size_t n = packet_read(text, b, sizeof b, &tpl, false);
-	if (!*expected || n < 18 || tpl != 13 || b[0] != 1 || !(b[11] & 1u) || b[12] != 3 || memcmp(b + 13, "ACK", 3)) return false;
+	if (n < 18 || tpl != 13 || b[0] != 1 || !(b[11] & 1u) || b[12] != 3 || memcmp(b + 13, "ACK", 3)) return false;
+	size_t length = (size_t)b[16] * 256u + b[17];
+	if (!length || length > 32 || length > n - 18) return false;
 	char message[33];
-	return text_field(b, n, 16, true, message, sizeof message, false) != 0 && strcmp(message, expected) == 0;
+	if (!text_field(b, n, 16, true, message, sizeof message, false)) return false;
+	for (size_t i = 0; i < length; i++) {
+		char c = message[i];
+		if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '-' || c == '_')) return false;
+	}
+	return !expected || (*expected && strcmp(message, expected) == 0);
 }

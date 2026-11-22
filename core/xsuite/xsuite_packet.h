@@ -21,5 +21,6 @@ typedef struct { unsigned tpl, part, total; char id[33]; const char *payload; si
 bool xsuite_packet_part(const char *text, xsuite_packet_part_t *part);
 uint32_t xsuite_unix_minutes(uint32_t date_ddmmyy, uint32_t utc_hhmmss);
 void xsuite_packet_summary(const char *text, char *out, size_t cap);
+// NULL detects a native control receipt; a nonempty ID additionally requires an exact correlation.
 bool xsuite_packet_ack(const char *text, const char *expected_id);
 #endif
