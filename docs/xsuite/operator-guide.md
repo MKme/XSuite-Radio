@@ -36,6 +36,8 @@ An unfamiliar sender appears under **Received radio assignments** in Team. Choos
 
 **Firmware flasher: BETA — Use at your own risk.** Make an original radio backup before installing or updating firmware, and keep it for recovery.
 
+The [X Suite Radio firmware repository](https://github.com/MKme/XSuite-Radio) contains the maintained RadioFoundry-based source, build instructions and upstream-update procedure. Use its illustrated guide and technical reference when building or maintaining the firmware.
+
 Use the installed application's bundled firmware tools with the radio's programming/data cable. Keep the radio powered and the cable connected throughout the operation. The application displays the required radio-mode and restart actions.
 
 1. Open **Digi Modes → APRS**, locate the X Suite radio card, choose **Find radios** and select the radio. In XCOM, select **Bridge connection** to show **X Suite radio · programming cable**.
