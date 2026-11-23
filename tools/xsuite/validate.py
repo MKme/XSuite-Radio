@@ -14,19 +14,35 @@ import shutil
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
-def validate(output, cross='/opt/xsuite/csky-elf/bin/csky-elf-', upstream=True):
+def canonical_app(xtoc_web=None):
+    app = pathlib.Path(xtoc_web or os.environ.get('XTOC_WEB_ROOT') or ROOT / '../../xtoc-web').resolve()
+    if not (app / 'package.json').is_file() or not (app / 'src/core/packet.ts').is_file():
+        raise RuntimeError('Canonical XTOC source is required: pass --xtoc-web PATH (the xtoc-web directory) '
+                           'or set XTOC_WEB_ROOT. Full release validation always checks the existing app encoders.')
+    return app
+
+
+def validation_output(output):
     output = pathlib.Path(output).resolve()
-    if output.exists() and any(output.iterdir()):
+    if output.exists() and (not output.is_dir() or any(output.iterdir())):
         raise RuntimeError('Use a new or verified empty task-owned output directory; existing output is preserved')
-    output.mkdir(parents=True, exist_ok=True)
+    return output
+
+
+def validate(output, cross='/opt/xsuite/csky-elf/bin/csky-elf-', upstream=True, xtoc_web=None):
+    app = canonical_app(xtoc_web)
+    output = validation_output(output)
     node = shutil.which('node') or shutil.which('node.exe')
     if not node:
         raise RuntimeError('The established XTOC Node build runtime is required for canonical codec fixtures')
     generator = str(ROOT / 'tools/xsuite/generate-templates.mjs')
+    app_arg = str(app)
     if node.endswith('.exe') and sys.platform != 'win32':
         generator = subprocess.check_output(['wslpath', '-w', generator], text=True).strip()
+        app_arg = subprocess.check_output(['wslpath', '-w', app_arg], text=True).strip()
+    output.mkdir(parents=True, exist_ok=True)
     commands = [
-        [node, generator, '--check'],
+        [node, generator, '--check', '--xtoc-web', app_arg],
         [sys.executable, 'tools/i18n.py', '--check'],
         [sys.executable, 'tests/host/xsuite_packet_test.py', '--output', str(output / 'packet')],
         ['cc', '-std=gnu99', '-Wall', '-Wextra', '-Werror', '-Wno-unused-parameter', '-Icore', '-Ihal', '-Idrivers', '-DCONFIG_XSUITE=1',
@@ -65,5 +81,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=pathlib.Path, required=True)
     parser.add_argument('--cross', default='/opt/xsuite/csky-elf/bin/csky-elf-')
+    parser.add_argument('--xtoc-web', type=pathlib.Path, help='Existing XTOC xtoc-web source; also accepts XTOC_WEB_ROOT')
     args = parser.parse_args()
-    print(json.dumps(validate(args.output, args.cross), indent=2))
+    print(json.dumps(validate(args.output, args.cross, xtoc_web=args.xtoc_web), indent=2))

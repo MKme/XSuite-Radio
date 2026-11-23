@@ -19,3 +19,8 @@ SPDX-License-Identifier = "MIT"
 path = ["stub/*.bin"]
 SPDX-FileCopyrightText = "2026 The RadioFoundry Authors"
 SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["README.md", "XSUITE.md", "docs/xsuite/**"]
+SPDX-FileCopyrightText = "2026 MKME Media"
+SPDX-License-Identifier = "MIT"

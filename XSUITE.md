@@ -1,14 +1,18 @@
 <!-- SPDX-License-Identifier: MIT -->
 <!-- Copyright (c) 2026 The RadioFoundry Authors -->
 <!-- Copyright (c) 2026 MKME Media -->
-# X Suite Radio
+# X Suite Radio technical integration
+
+**Firmware flasher: BETA — Use at your own risk.** Retain the radio's original backup before installing or updating firmware.
+
+Use the [operator guide](docs/xsuite/operator-guide.md) for setup and field operation, the [build guide](docs/xsuite/building.md) for source builds, and the [upstream guide](docs/xsuite/upstream.md) for maintained merges.
 
 X Suite Radio is based on [RadioFoundry](https://github.com/RadioFoundry/RadioFoundry), MIT licensed.
 It sends native XTOC reports through the existing APRS/AX.25 and DMR data services. XTOC and XCOM match the radio's
 normal callsign/SSID or DMR source ID to the saved Team roster. The firmware stores radio settings, not a second roster.
 
-The local derivative branch is `codex/xsuite-radio`. The `upstream` remote retains RadioFoundry's complete history.
-The checkout excludes `.github`; validation runs locally. Keep the upstream copyright, LICENSE, AUTHORS,
+The maintained default branch in [MKme/XSuite-Radio](https://github.com/MKme/XSuite-Radio) is `codex/xsuite-radio`.
+The `origin` remote identifies this fork and `upstream` identifies RadioFoundry. Both histories remain available; validation runs locally. Keep the upstream copyright, LICENSE, AUTHORS,
 CONTRIBUTORS and third-party notices with source and firmware distributions. The radio's proprietary voice codec
 comes from its own verified local backup and is retained locally.
 
@@ -30,17 +34,23 @@ with `CONFIG_XSUITE=n` keeps the integration inactive. The appended settings ext
 6. Record the exact accepted upstream commit, derivative commit, compiler and final image hash in the release manifest.
 
 If a merge conflicts or checks fail, preserve the work and repair it before packaging. Never force-push or reset the
-derivative as an update mechanism. See the main X Suite release workflow for application and guide delivery.
+derivative as an update mechanism. See the [upstream update procedure](docs/xsuite/upstream.md) and [canonical application checks](docs/xsuite/building.md#canonical-application-and-full-release-checks) for application and guide delivery.
 
 ## Building
 
-Use the pinned compiler in `platform/hrc7000/platform.toml`. The approved isolated Windows build distribution is
-`XSuiteRadioBuild`, with the compiler at `/opt/xsuite/csky-elf`.
+A standalone build uses the committed generated templates and the C-SKY compiler pinned in `platform/hrc7000/platform.toml`:
 
 ```sh
-node tools/xsuite/generate-templates.mjs --check
-make BOARD=dm32 VARIANT=xsuite CROSS=/opt/xsuite/csky-elf/bin/csky-elf- RFOUNDRY_PYTHON=/usr/bin/python3
+make BOARD=dm32 VARIANT=xsuite CROSS=/path/to/csky-elf/bin/csky-elf- RFOUNDRY_PYTHON=python3
 ```
+
+Maintainers check or regenerate templates with the existing canonical XTOC application source:
+
+```sh
+node tools/xsuite/generate-templates.mjs --check --xtoc-web /path/to/XTOC/xtoc-web
+```
+
+The [build guide](docs/xsuite/building.md) separates standalone source checks from the complete canonical application release gate.
 
 Generated menu payloads come from the application's existing `encode*Clear` functions. Firmware fills their generated
 time, GPS, printable note/text, quantity/count and priority slots and applies the native X1 wrapper. Presets send with
@@ -107,11 +117,7 @@ Other addressees remain in the unchanged raw host receive stream for the applica
 The Chinese catalog uses English for the new report labels outside the bundled CJK font. Other existing Chinese UI
 and translated X Suite controls use the existing bundled glyphs.
 
-Run the complete Linux gate with `python3 tools/xsuite/validate.py --output NEW_EMPTY_DIRECTORY`. The same gate runs
-from `update_upstream.py --merge --validate --output NEW_EMPTY_DIRECTORY --export-source`. After a clean reviewed
-commit it exports `../upstream.json` and `../patches/0001-xsuite-radio.patch`, so an XTOC checkout can reconstruct the
-source from the pinned public upstream commit and the owned patch without fetching a private derivative commit.
-Keep `.github` outside the sparse checkout, initialize only the pinned FreeRTOS submodule, apply the patch, and save
-the restored source on the approved derivative branch. Use a Linux checkout with LF script line endings; Windows
-clone setup sets `core.autocrlf=input` before the initial checkout. The source and runtime stay durable; validation
-outputs are task-owned temporary files whose final image, result and hashes are preserved before cleanup.
+Run the complete Linux gate with `python3 tools/xsuite/validate.py --xtoc-web /path/to/XTOC/xtoc-web --cross /path/to/csky-elf/bin/csky-elf- --output NEW_EMPTY_DIRECTORY`.
+The [upstream update helper](docs/xsuite/upstream.md#merge-review-and-qualify) can perform the same gate after an ordinary merge.
+An optional `--export-source --export-dir PATH` writes an exact portable delta and pinned provenance to a chosen maintenance directory after a clean reviewed commit.
+The public fork itself supplies the directly cloneable source and history. Use LF line endings for Linux scripts and retain the pinned submodule commits, as shown in the [clone instructions](docs/xsuite/upstream.md#clone-the-maintained-branch).
